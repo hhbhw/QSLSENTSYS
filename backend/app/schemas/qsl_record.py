@@ -33,3 +33,11 @@ class QslRecordResponse(QslRecordBase):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class PublicQslRecordResponse(BaseModel):
+    callsign: str
+    is_written: bool
+    is_sent: bool
+
+    model_config = {"from_attributes": True}

@@ -1,5 +1,7 @@
 # Backend (FastAPI)
 
+当前仓库已迁移至 GitHub：<https://github.com/hhbhw/QSLSENTSYS>
+
 ## 1. Setup
 
 1. Create and activate virtual environment.
@@ -26,6 +28,12 @@ The first startup creates one admin account based on environment variables:
 ## 4. API
 
 - `POST /api/v1/auth/login`
+- `GET /api/v1/users/me`
 - `POST /api/v1/records`
 - `GET /api/v1/records?callsign=BG1XXX`
 - `PATCH /api/v1/records/{id}`
+- `GET /api/v1/records/public?callsign=BG1XXX`
+- `GET /api/v1/users` (admin)
+- `POST /api/v1/users` (admin)
+- `PATCH /api/v1/users/{id}` (admin)
+- `POST /api/v1/users/{id}/reset-password` (admin)

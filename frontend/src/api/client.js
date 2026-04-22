@@ -18,6 +18,14 @@ export async function login(username, password) {
   return response.json()
 }
 
+export async function getCurrentUser() {
+  const response = await fetch(`${API_BASE}/users/me`, {
+    headers: getHeaders(),
+  })
+  if (!response.ok) throw new Error('获取用户信息失败')
+  return response.json()
+}
+
 export async function changePassword(oldPassword, newPassword) {
   const response = await fetch(`${API_BASE}/auth/change-password`, {
     method: 'POST',
@@ -62,6 +70,17 @@ export async function searchRecords(callsign, isWritten, isSent, sortBy = 'creat
   return response.json()
 }
 
+export async function searchPublicRecords(callsign, page = 1, pageSize = 20) {
+  const params = new URLSearchParams()
+  if (callsign) params.append('callsign', callsign)
+  params.append('page', page)
+  params.append('page_size', pageSize)
+
+  const response = await fetch(`${API_BASE}/records/public?${params}`)
+  if (!response.ok) throw new Error('公开查询失败')
+  return response.json()
+}
+
 export async function updateRecord(id, payload) {
   const response = await fetch(`${API_BASE}/records/${id}`, {
     method: 'PATCH',
@@ -84,4 +103,54 @@ export async function deleteRecord(id) {
     const data = await response.json().catch(() => ({}))
     throw new Error(data.detail || '删除失败')
   }
+}
+
+export async function listUsers() {
+  const response = await fetch(`${API_BASE}/users`, {
+    headers: getHeaders(),
+  })
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}))
+    throw new Error(data.detail || '获取账号列表失败')
+  }
+  return response.json()
+}
+
+export async function createUser(payload) {
+  const response = await fetch(`${API_BASE}/users`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(payload),
+  })
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}))
+    throw new Error(data.detail || '创建账号失败')
+  }
+  return response.json()
+}
+
+export async function updateUser(id, payload) {
+  const response = await fetch(`${API_BASE}/users/${id}`, {
+    method: 'PATCH',
+    headers: getHeaders(),
+    body: JSON.stringify(payload),
+  })
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}))
+    throw new Error(data.detail || '更新账号失败')
+  }
+  return response.json()
+}
+
+export async function resetUserPassword(id, newPassword) {
+  const response = await fetch(`${API_BASE}/users/${id}/reset-password`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ new_password: newPassword }),
+  })
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}))
+    throw new Error(data.detail || '重置密码失败')
+  }
+  return response.json()
 }

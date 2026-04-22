@@ -1,13 +1,18 @@
 import { useEffect, useState } from 'react'
-import { changePassword, createRecord, deleteRecord, login, searchRecords, updateRecord } from './api/client'
+import { changePassword, createRecord, deleteRecord, getCurrentUser, login, searchRecords, updateRecord } from './api/client'
 import ChangePasswordModal from './components/ChangePasswordModal'
 import LoginForm from './components/LoginForm'
 import RecordForm from './components/RecordForm'
 import RecordedList from './components/RecordedList'
 import RecordTable from './components/RecordTable'
+import PublicQueryPage from './pages/PublicQueryPage'
+import UserManagementPanel from './components/UserManagementPanel'
 
 export default function App() {
+  const isPublicPage = window.location.pathname.startsWith('/public-query')
   const [token, setToken] = useState(localStorage.getItem('qsl_token') || '')
+  const [role, setRole] = useState(localStorage.getItem('qsl_role') || '')
+  const [username, setUsername] = useState(localStorage.getItem('qsl_username') || '')
   const [needChangePassword, setNeedChangePassword] = useState(false)
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false)
   const [records, setRecords] = useState([])
@@ -22,6 +27,13 @@ export default function App() {
   const [sortOrder, setSortOrder] = useState('desc')
   const [highlightedRecordId, setHighlightedRecordId] = useState(null)
   const [message, setMessage] = useState('')
+
+  const canEdit = role === 'admin' || role === 'editor'
+  const isAdmin = role === 'admin'
+
+  if (isPublicPage) {
+    return <PublicQueryPage />
+  }
 
   const loadRecords = async (callsign = '', page = 1, written = '', sent = '', sort = 'created_at', order = 'desc', extraQuery = '') => {
     const result = await searchRecords(callsign, written === '' ? undefined : written === 'true', sent === '' ? undefined : sent === 'true', sort, order, page, 20, extraQuery)
@@ -41,6 +53,16 @@ export default function App() {
 
   useEffect(() => {
     if (token && !needChangePassword) {
+      if (!role) {
+        getCurrentUser().then((user) => {
+          setRole(user.role)
+          setUsername(user.username)
+          localStorage.setItem('qsl_role', user.role)
+          localStorage.setItem('qsl_username', user.username)
+        }).catch(() => {
+          setMessage('无法获取用户角色，请重新登录')
+        })
+      }
       loadRecords(searchTerm, 1, filterWritten, filterSent, sortBy, sortOrder).catch((e) => {
         setMessage(e.message)
       })
@@ -53,7 +75,11 @@ export default function App() {
   const handleLogin = async (username, password) => {
     const data = await login(username, password)
     localStorage.setItem('qsl_token', data.access_token)
+    localStorage.setItem('qsl_role', data.role)
+    localStorage.setItem('qsl_username', data.username)
     setToken(data.access_token)
+    setRole(data.role)
+    setUsername(data.username)
     if (!data.password_changed) {
       setNeedChangePassword(true)
     }
@@ -68,6 +94,10 @@ export default function App() {
   }
 
   const handleCreate = async (payload) => {
+    if (!canEdit) {
+      setMessage('当前账号仅有查看权限')
+      return
+    }
     const created = await createRecord(payload)
     setMessage(`记录创建成功：${created.callsign}`)
     setSearchTerm(created.callsign)
@@ -93,6 +123,10 @@ export default function App() {
   }
 
   const handleUpdate = async (id, payload) => {
+    if (!canEdit) {
+      setMessage('当前账号仅有查看权限')
+      return
+    }
     await updateRecord(id, payload)
     setMessage('记录已更新')
     await loadRecords(searchTerm, pagination.page, filterWritten, filterSent, sortBy, sortOrder, searchExtraQuery)
@@ -100,6 +134,10 @@ export default function App() {
   }
 
   const handleDelete = async (id) => {
+    if (!canEdit) {
+      setMessage('当前账号仅有查看权限')
+      return
+    }
     if (!window.confirm('确定删除这条记录吗？')) return
     await deleteRecord(id)
     setMessage('记录已删除')
@@ -120,7 +158,11 @@ export default function App() {
 
   const handleLogout = () => {
     localStorage.removeItem('qsl_token')
+    localStorage.removeItem('qsl_role')
+    localStorage.removeItem('qsl_username')
     setToken('')
+    setRole('')
+    setUsername('')
     setRecords([])
     setMessage('已退出登录')
   }
@@ -147,6 +189,7 @@ export default function App() {
       <header className="topbar">
         <h1>QSL 卡片发出记录系统</h1>
         <div className="topbar-actions">
+          <span className="role-badge">{username} / {role || 'unknown'}</span>
           <button type="button" onClick={() => setShowChangePasswordModal(true)}>修改密码</button>
           <button type="button" onClick={handleLogout}>退出</button>
         </div>
@@ -161,10 +204,12 @@ export default function App() {
         />
       )}
 
-      <RecordForm onCreate={handleCreate} />
+      {canEdit && <RecordForm onCreate={handleCreate} />}
+
+      {isAdmin && <UserManagementPanel />}
 
       {message && <p className="message">{message}</p>}
-      <RecordedList records={overviewRecords} loading={overviewLoading} onRefresh={loadOverviewRecords} onUpdate={handleUpdate} onDelete={handleDelete} />
+      <RecordedList records={overviewRecords} loading={overviewLoading} onRefresh={loadOverviewRecords} onUpdate={handleUpdate} onDelete={handleDelete} canEdit={canEdit} />
 
       <form className="card search-bar" onSubmit={handleSearch}>
         <label>
@@ -201,6 +246,7 @@ export default function App() {
         sortBy={sortBy}
         sortOrder={sortOrder}
         highlightedRecordId={highlightedRecordId}
+        canEdit={canEdit}
         onUpdate={handleUpdate}
         onDelete={handleDelete}
         onPageChange={handlePageChange}

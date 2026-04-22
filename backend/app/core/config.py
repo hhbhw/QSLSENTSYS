@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     secret_key: str = "replace_with_a_long_random_string"
     access_token_expire_minutes: int = 720
     database_url: str = "sqlite:///./qsl.db"
-    admin_username: str = "admin"
+    admin_username: str = "change_me_admin"
     admin_password: str = "ChangeMe123!"
     cors_origins: str = "http://localhost:5173"
     cors_origin_regex: str = r"^https?://.*:5173$"

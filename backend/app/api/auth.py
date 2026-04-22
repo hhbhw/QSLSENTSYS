@@ -14,11 +14,16 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post("/login", response_model=TokenResponse)
 def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
     admin = db.query(AdminUser).filter(AdminUser.username == payload.username).first()
-    if not admin or not verify_password(payload.password, admin.hashed_password):
+    if not admin or not admin.is_active or not verify_password(payload.password, admin.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
-    token = create_access_token(subject=admin.username)
-    return TokenResponse(access_token=token, password_changed=admin.password_changed)
+    token = create_access_token(subject=admin.username, role=admin.role)
+    return TokenResponse(
+        access_token=token,
+        password_changed=admin.password_changed,
+        username=admin.username,
+        role=admin.role,
+    )
 
 
 @router.post("/change-password")

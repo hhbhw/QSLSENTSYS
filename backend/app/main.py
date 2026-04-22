@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth, records
+from app.api import auth, records, users
 from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine, SessionLocal
@@ -36,3 +36,4 @@ def health() -> dict[str, str]:
 
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(records.router, prefix="/api/v1")
+app.include_router(users.router, prefix="/api/v1")

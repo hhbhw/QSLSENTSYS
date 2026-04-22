@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 export default function LoginForm({ onLogin }) {
-  const [username, setUsername] = useState('admin')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -22,10 +22,10 @@ export default function LoginForm({ onLogin }) {
 
   return (
     <form className="card login-card" onSubmit={handleSubmit}>
-      <h2>管理员登录</h2>
+      <h2>账号登录</h2>
       <label>
         用户名
-        <input value={username} onChange={(e) => setUsername(e.target.value)} required />
+        <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="请输入用户名" required />
       </label>
       <label>
         密码

@@ -2,15 +2,18 @@
 
 QSL 卡片发出记录系统是一个基于 FastAPI + React 的轻量级网页应用，用于管理业余无线电的QSL卡片收发记录。支持呼号录入、状态跟踪、自由扩展属性、分页查询与排序，可部署至自托管主机或阿里云ECS。
 
+仓库地址已更新为：[https://github.com/hhbhw/QSLSENTSYS](https://github.com/hhbhw/QSLSENTSYS)
+
 ## 核心功能
 
-- **管理员登录**：单管理员认证、首次启动强制改密
+- **账号登录与权限**：支持 `admin / editor / viewer` 三种角色
 - **呼号管理**：新增、查询、编辑QSL记录
 - **状态跟踪**：布尔字段记录"是否已写好"和"是否已发出"
 - **卡片类型**：自定义卡片类型（直邮卡、贺卡等）
 - **可扩展属性**：自由键值对扩展字段（频率、通信模式等）
 - **高级查询**：按呼号模糊搜索、状态筛选、字段排序、分页浏览
 - **网页表格**：动态列展示、快速状态切换、扩展属性编辑
+- **公开查询页**：可匿名访问，只展示呼号与写好/发出状态
 
 ## 项目结构
 
@@ -83,8 +86,8 @@ npm run dev -- --host 0.0.0.0 --port 5173
 访问应用：http://localhost:5173
 
 **默认登录凭证**（来自 `.env`）
-- 用户名: `admin`
-- 密码: `ChangeMe123!`
+- 用户名: `ADMIN_USERNAME`
+- 密码: `ADMIN_PASSWORD`
 
 ### Docker本地运行
 
@@ -107,12 +110,46 @@ chmod +x deploy.sh
 ./deploy.sh yourdomain.com api.yourdomain.com "postgresql://..." "StrongPassword"
 ```
 
+## 公开查询页嵌入
+
+公开查询页地址：
+
+```text
+https://你的前端域名/public-query
+```
+
+如果你的个人主页需要通过 iframe 嵌入，可以直接使用下面的方式：
+
+```html
+<iframe
+	src="https://你的前端域名/public-query"
+	width="100%"
+	height="420"
+	frameborder="0"
+	style="border:0"
+></iframe>
+```
+
+如果要带查询参数，也可以这样写：
+
+```html
+<iframe
+	src="https://你的前端域名/public-query?callsign=BG1ABC"
+	width="100%"
+	height="420"
+	frameborder="0"
+	style="border:0"
+></iframe>
+```
+
+注意：生产环境需要在前端反代或 Nginx 中允许 iframe 嵌入；仓库中的前端 Nginx 配置已经按这个方向调整。
+
 ## 核心API
 
 | 端点 | 方法 | 描述 | 认证 |
 |------|------|------|------|
 | `/api/v1/health` | GET | 健康检查 | 否 |
-| `/api/v1/auth/login` | POST | 管理员登录 | 否 |
+| `/api/v1/auth/login` | POST | 账号登录 | 否 |
 | `/api/v1/auth/change-password` | POST | 修改密码 | 是 |
 | `/api/v1/records` | POST | 新增记录 | 是 |
 | `/api/v1/records` | GET | 查询记录（含分页、筛选、排序） | 是 |
@@ -185,6 +222,7 @@ DATABASE_URL=postgresql://user:password@localhost:5432/qsl_db
 
 ### 规划中（v0.2.0+）
 
+- ✅ 公开查询页（iframe 嵌入）
 - ⬜ 批量导入/导出（CSV/Excel）
 - ⬜ 数据备份与恢复
 - ⬜ 操作日志审计
@@ -199,7 +237,7 @@ DATABASE_URL=postgresql://user:password@localhost:5432/qsl_db
 | `APP_NAME` | QSL Card Tracker API | 应用名称 |
 | `SECRET_KEY` | 无 | JWT加密密钥（必须设置） |
 | `DATABASE_URL` | sqlite:///./qsl.db | 数据库URL |
-| `ADMIN_USERNAME` | admin | 默认管理员用户名 |
+| `ADMIN_USERNAME` | change_me_admin | 默认管理员用户名（请在本地 .env 覆盖） |
 | `ADMIN_PASSWORD` | ChangeMe123! | 默认管理员密码 |
 | `CORS_ORIGINS` | http://localhost:5173 | 跨域白名单 |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | 720 | token过期时间（分钟） |

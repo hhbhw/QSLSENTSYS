@@ -25,6 +25,56 @@ body {
   padding: 24px 16px 40px;
 }
 
+.public-page {
+  max-width: 860px;
+}
+
+.public-hero {
+  display: grid;
+  gap: 10px;
+}
+
+.public-hero h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.8rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.public-search {
+  display: grid;
+  gap: 12px;
+}
+
+.public-search-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.secondary-btn {
+  background: #eef1f2;
+  color: var(--ink);
+  border-color: var(--border);
+}
+
+.public-message {
+  text-align: center;
+}
+
+.user-create-actions {
+  display: flex;
+  align-items: end;
+}
+
 .auth-page {
   min-height: 100vh;
   display: grid;
@@ -43,6 +93,16 @@ body {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #e9f0f3;
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
 }
 
 .card {
@@ -238,5 +298,10 @@ th {
 
   .search-bar {
     grid-template-columns: 1fr;
+  }
+
+  .public-search-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

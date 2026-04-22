@@ -114,7 +114,7 @@ APP_NAME=QSL Card Tracker API
 SECRET_KEY=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))")
 ACCESS_TOKEN_EXPIRE_MINUTES=1440
 DATABASE_URL=postgresql://qsl_admin:PASSWORD@rm-xxx.pg.rds.aliyuncs.com:5432/qsl_db
-ADMIN_USERNAME=admin
+ADMIN_USERNAME=change_me_admin
 ADMIN_PASSWORD=YOUR_STRONG_PASSWORD
 CORS_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 ```

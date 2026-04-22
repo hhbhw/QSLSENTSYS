@@ -10,6 +10,8 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     password_changed: bool = True
+    username: str
+    role: str
 
 
 class ChangePasswordRequest(BaseModel):

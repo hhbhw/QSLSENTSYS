@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
-export default function RecordTable({ records, pagination, sortBy, sortOrder, highlightedRecordId, onUpdate, onPageChange, onSortChange }) {
+export default function RecordTable({ records, pagination, sortBy, sortOrder, highlightedRecordId, canEdit, onUpdate, onPageChange, onSortChange }) {
   const [editingId, setEditingId] = useState(null)
   const [editingExtra, setEditingExtra] = useState('')
 
@@ -79,17 +79,19 @@ export default function RecordTable({ records, pagination, sortBy, sortOrder, hi
                 <td>{item.is_sent ? '是' : '否'}</td>
                 {extraKeys.map((key) => <td key={key}>{item.extra_attributes?.[key] || '-'}</td>)}
                 <td>
-                  {editingId === item.id ? (
+                  {canEdit && editingId === item.id ? (
                     <div className="edit-actions">
                       <textarea rows="3" value={editingExtra} onChange={(e) => setEditingExtra(e.target.value)} />
                       <button onClick={() => onUpdate(item.id, { extra_attributes: parseExtra(editingExtra) }).then(() => setEditingId(null))}>保存扩展属性</button>
                     </div>
-                  ) : (
+                  ) : canEdit ? (
                     <div className="edit-actions">
                       <button onClick={() => onUpdate(item.id, { is_written: !item.is_written })}>切换已写好</button>
                       <button onClick={() => onUpdate(item.id, { is_sent: !item.is_sent })}>切换已发出</button>
                       <button onClick={() => startEdit(item)}>编辑扩展属性</button>
                     </div>
+                  ) : (
+                    <span>-</span>
                   )}
                 </td>
               </tr>

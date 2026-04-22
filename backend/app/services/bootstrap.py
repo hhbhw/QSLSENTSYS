@@ -22,6 +22,12 @@ def ensure_legacy_schema(db: Session) -> None:
     if "updated_at" not in columns:
         db.execute(text("ALTER TABLE admin_users ADD COLUMN updated_at DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00'"))
         altered = True
+    if "role" not in columns:
+        db.execute(text("ALTER TABLE admin_users ADD COLUMN role VARCHAR(16) NOT NULL DEFAULT 'admin'"))
+        altered = True
+    if "is_active" not in columns:
+        db.execute(text("ALTER TABLE admin_users ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT 1"))
+        altered = True
     if altered:
         db.commit()
 
@@ -31,11 +37,17 @@ def ensure_admin_user(db: Session) -> None:
 
     existing = db.query(AdminUser).filter(AdminUser.username == settings.admin_username).first()
     if existing:
+        if existing.role != AdminUser.ROLE_ADMIN:
+            existing.role = AdminUser.ROLE_ADMIN
+            db.add(existing)
+            db.commit()
         return
 
     admin = AdminUser(
         username=settings.admin_username,
         hashed_password=get_password_hash(settings.admin_password),
+        role=AdminUser.ROLE_ADMIN,
+        is_active=True,
         password_changed=False,
     )
     db.add(admin)

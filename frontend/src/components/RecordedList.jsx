@@ -16,7 +16,7 @@ function parseExtraText(text) {
   return result
 }
 
-export default function RecordedList({ records, loading, onRefresh, onUpdate, onDelete }) {
+export default function RecordedList({ records, loading, onRefresh, onUpdate, onDelete, canEdit }) {
   const [editingId, setEditingId] = useState(null)
   const [formState, setFormState] = useState({ card_type: '', is_written: false, is_sent: false, extra_text: '' })
 
@@ -93,7 +93,7 @@ export default function RecordedList({ records, loading, onRefresh, onUpdate, on
                   </td>
                   <td>{item.created_at || '-'}</td>
                   <td>
-                    {editingId === item.id ? (
+                    {canEdit && editingId === item.id ? (
                       <div className="edit-actions">
                         <textarea rows="3" value={formState.extra_text} onChange={(e) => setFormState({ ...formState, extra_text: e.target.value })} placeholder={'key:value\nmode:SSB'} />
                         <div className="inline-actions">
@@ -101,11 +101,13 @@ export default function RecordedList({ records, loading, onRefresh, onUpdate, on
                           <button type="button" onClick={cancelEdit}>取消</button>
                         </div>
                       </div>
-                    ) : (
+                    ) : canEdit ? (
                       <div className="inline-actions">
                         <button type="button" onClick={() => startEdit(item)}>编辑</button>
                         <button type="button" className="danger-btn" onClick={() => onDelete(item.id)}>删除</button>
                       </div>
+                    ) : (
+                      <span>-</span>
                     )}
                   </td>
                 </tr>
