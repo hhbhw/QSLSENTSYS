@@ -262,7 +262,8 @@ MIT License
 
 如有问题，请创建Issue或通过以下方式联系：
 - GitHub Issues
-- 邮件：support@example.com
+- 邮件：bi4avz@gmail.com
+
 
 ---
 
