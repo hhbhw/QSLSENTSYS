@@ -1,0 +1,211 @@
+import { useEffect, useState } from 'react'
+import { changePassword, createRecord, deleteRecord, login, searchRecords, updateRecord } from './api/client'
+import ChangePasswordModal from './components/ChangePasswordModal'
+import LoginForm from './components/LoginForm'
+import RecordForm from './components/RecordForm'
+import RecordedList from './components/RecordedList'
+import RecordTable from './components/RecordTable'
+
+export default function App() {
+  const [token, setToken] = useState(localStorage.getItem('qsl_token') || '')
+  const [needChangePassword, setNeedChangePassword] = useState(false)
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false)
+  const [records, setRecords] = useState([])
+  const [overviewRecords, setOverviewRecords] = useState([])
+  const [overviewLoading, setOverviewLoading] = useState(false)
+  const [pagination, setPagination] = useState({ page: 1, page_size: 20, total: 0, total_pages: 0 })
+  const [searchTerm, setSearchTerm] = useState('')
+  const [searchExtraQuery, setSearchExtraQuery] = useState('')
+  const [filterWritten, setFilterWritten] = useState('')
+  const [filterSent, setFilterSent] = useState('')
+  const [sortBy, setSortBy] = useState('created_at')
+  const [sortOrder, setSortOrder] = useState('desc')
+  const [highlightedRecordId, setHighlightedRecordId] = useState(null)
+  const [message, setMessage] = useState('')
+
+  const loadRecords = async (callsign = '', page = 1, written = '', sent = '', sort = 'created_at', order = 'desc', extraQuery = '') => {
+    const result = await searchRecords(callsign, written === '' ? undefined : written === 'true', sent === '' ? undefined : sent === 'true', sort, order, page, 20, extraQuery)
+    setRecords(result.data || [])
+    setPagination(result.pagination || {})
+  }
+
+  const loadOverviewRecords = async () => {
+    setOverviewLoading(true)
+    try {
+      const result = await searchRecords('', undefined, undefined, 'created_at', 'desc', 1, 100)
+      setOverviewRecords(result.data || [])
+    } finally {
+      setOverviewLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (token && !needChangePassword) {
+      loadRecords(searchTerm, 1, filterWritten, filterSent, sortBy, sortOrder).catch((e) => {
+        setMessage(e.message)
+      })
+      loadOverviewRecords().catch((e) => {
+        setMessage(e.message)
+      })
+    }
+  }, [token, needChangePassword])
+
+  const handleLogin = async (username, password) => {
+    const data = await login(username, password)
+    localStorage.setItem('qsl_token', data.access_token)
+    setToken(data.access_token)
+    if (!data.password_changed) {
+      setNeedChangePassword(true)
+    }
+    setMessage('登录成功')
+  }
+
+  const handleChangePassword = async (oldPassword, newPassword) => {
+    await changePassword(oldPassword, newPassword)
+    setNeedChangePassword(false)
+    setShowChangePasswordModal(false)
+    setMessage('密码修改成功！')
+  }
+
+  const handleCreate = async (payload) => {
+    const created = await createRecord(payload)
+    setMessage(`记录创建成功：${created.callsign}`)
+    setSearchTerm(created.callsign)
+    setFilterWritten('')
+    setFilterSent('')
+    await loadRecords(created.callsign, 1, '', '', sortBy, sortOrder, '')
+    await loadOverviewRecords()
+    setHighlightedRecordId(created.id)
+  }
+
+  useEffect(() => {
+    if (!highlightedRecordId) return
+    const timer = setTimeout(() => {
+      setHighlightedRecordId(null)
+    }, 4500)
+    return () => clearTimeout(timer)
+  }, [highlightedRecordId])
+
+  const handleSearch = async (event) => {
+    event.preventDefault()
+    setPagination({ ...pagination, page: 1 })
+    await loadRecords(searchTerm, 1, filterWritten, filterSent, sortBy, sortOrder, searchExtraQuery)
+  }
+
+  const handleUpdate = async (id, payload) => {
+    await updateRecord(id, payload)
+    setMessage('记录已更新')
+    await loadRecords(searchTerm, pagination.page, filterWritten, filterSent, sortBy, sortOrder, searchExtraQuery)
+    await loadOverviewRecords()
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('确定删除这条记录吗？')) return
+    await deleteRecord(id)
+    setMessage('记录已删除')
+    await loadRecords(searchTerm, pagination.page, filterWritten, filterSent, sortBy, sortOrder, searchExtraQuery)
+    await loadOverviewRecords()
+  }
+
+  const handlePageChange = async (newPage) => {
+    await loadRecords(searchTerm, newPage, filterWritten, filterSent, sortBy, sortOrder, searchExtraQuery)
+  }
+
+  const handleSortChange = async (newSort, newOrder) => {
+    setSortBy(newSort)
+    setSortOrder(newOrder)
+    setPagination({ ...pagination, page: 1 })
+    await loadRecords(searchTerm, 1, filterWritten, filterSent, newSort, newOrder, searchExtraQuery)
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('qsl_token')
+    setToken('')
+    setRecords([])
+    setMessage('已退出登录')
+  }
+
+  if (!token) {
+    return (
+      <main className="container auth-page">
+        <h1>QSL 卡片发出记录系统</h1>
+        <LoginForm onLogin={handleLogin} />
+      </main>
+    )
+  }
+
+  if (needChangePassword) {
+    return (
+      <main className="container">
+        <ChangePasswordModal onClose={() => setNeedChangePassword(false)} onSubmit={handleChangePassword} />
+      </main>
+    )
+  }
+
+  return (
+    <main className="container">
+      <header className="topbar">
+        <h1>QSL 卡片发出记录系统</h1>
+        <div className="topbar-actions">
+          <button type="button" onClick={() => setShowChangePasswordModal(true)}>修改密码</button>
+          <button type="button" onClick={handleLogout}>退出</button>
+        </div>
+      </header>
+
+      {(needChangePassword || showChangePasswordModal) && (
+        <ChangePasswordModal
+          onClose={() => {
+            if (!needChangePassword) setShowChangePasswordModal(false)
+          }}
+          onSubmit={handleChangePassword}
+        />
+      )}
+
+      <RecordForm onCreate={handleCreate} />
+
+      {message && <p className="message">{message}</p>}
+      <RecordedList records={overviewRecords} loading={overviewLoading} onRefresh={loadOverviewRecords} onUpdate={handleUpdate} onDelete={handleDelete} />
+
+      <form className="card search-bar" onSubmit={handleSearch}>
+        <label>
+          呼号
+          <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="输入呼号" />
+        </label>
+        <label>
+          扩展属性
+          <input value={searchExtraQuery} onChange={(e) => setSearchExtraQuery(e.target.value)} placeholder="例如 SEND / mode / SSB" />
+        </label>
+        <label>
+          已写好
+          <select value={filterWritten} onChange={(e) => setFilterWritten(e.target.value)}>
+            <option value="">全部</option>
+            <option value="true">是</option>
+            <option value="false">否</option>
+          </select>
+        </label>
+        <label>
+          已发出
+          <select value={filterSent} onChange={(e) => setFilterSent(e.target.value)}>
+            <option value="">全部</option>
+            <option value="true">是</option>
+            <option value="false">否</option>
+          </select>
+        </label>
+        <button type="submit">查询</button>
+        <button type="button" onClick={() => loadRecords(searchTerm, 1, filterWritten, filterSent, sortBy, sortOrder, searchExtraQuery)}>刷新列表</button>
+        <button type="button" onClick={() => { setSearchTerm(''); setSearchExtraQuery(''); setFilterWritten(''); setFilterSent(''); loadRecords('', 1, '', '', sortBy, sortOrder, '') }}>重置</button>
+      </form>
+      <RecordTable
+        records={records}
+        pagination={pagination}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        highlightedRecordId={highlightedRecordId}
+        onUpdate={handleUpdate}
+        onDelete={handleDelete}
+        onPageChange={handlePageChange}
+        onSortChange={handleSortChange}
+      />
+    </main>
+  )
+}

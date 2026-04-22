@@ -1,0 +1,29 @@
+services:
+  backend:
+    build:
+      context: ../backend
+    container_name: qsl-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_NAME=QSL Card Tracker API
+      - SECRET_KEY=replace_with_a_long_random_string
+      - ACCESS_TOKEN_EXPIRE_MINUTES=720
+      - DATABASE_URL=sqlite:///./qsl.db
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=ChangeMe123!
+      - CORS_ORIGINS=http://localhost:5173,http://localhost
+    volumes:
+      - qsl_data:/app
+
+  frontend:
+    build:
+      context: ../frontend
+    container_name: qsl-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  qsl_data:
