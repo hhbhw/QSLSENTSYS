@@ -1,5 +1,29 @@
 const API_BASE = import.meta.env.VITE_API_BASE || '/api/v1'
 
+function toErrorMessage(detail, fallback) {
+  if (!detail) return fallback
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail)) {
+    const first = detail[0]
+    if (typeof first === 'string') return first
+    if (first && typeof first === 'object') {
+      if (typeof first.msg === 'string') return first.msg
+      return JSON.stringify(first)
+    }
+    return fallback
+  }
+  if (typeof detail === 'object') {
+    if (typeof detail.msg === 'string') return detail.msg
+    return JSON.stringify(detail)
+  }
+  return fallback
+}
+
+async function throwApiError(response, fallback) {
+  const data = await response.json().catch(() => ({}))
+  throw new Error(toErrorMessage(data.detail, fallback))
+}
+
 function getHeaders() {
   const token = localStorage.getItem('qsl_token')
   return {
@@ -33,8 +57,7 @@ export async function changePassword(oldPassword, newPassword) {
     body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
   })
   if (!response.ok) {
-    const data = await response.json().catch(() => ({}))
-    throw new Error(data.detail || '修改密码失败')
+    await throwApiError(response, '修改密码失败')
   }
   return response.json()
 }
@@ -46,8 +69,7 @@ export async function createRecord(payload) {
     body: JSON.stringify(payload),
   })
   if (!response.ok) {
-    const data = await response.json().catch(() => ({}))
-    throw new Error(data.detail || '创建记录失败')
+    await throwApiError(response, '创建记录失败')
   }
   return response.json()
 }
@@ -88,8 +110,7 @@ export async function updateRecord(id, payload) {
     body: JSON.stringify(payload),
   })
   if (!response.ok) {
-    const data = await response.json().catch(() => ({}))
-    throw new Error(data.detail || '更新失败')
+    await throwApiError(response, '更新失败')
   }
   return response.json()
 }
@@ -100,8 +121,7 @@ export async function deleteRecord(id) {
     headers: getHeaders(),
   })
   if (!response.ok && response.status !== 204) {
-    const data = await response.json().catch(() => ({}))
-    throw new Error(data.detail || '删除失败')
+    await throwApiError(response, '删除失败')
   }
 }
 
@@ -110,8 +130,7 @@ export async function listUsers() {
     headers: getHeaders(),
   })
   if (!response.ok) {
-    const data = await response.json().catch(() => ({}))
-    throw new Error(data.detail || '获取账号列表失败')
+    await throwApiError(response, '获取账号列表失败')
   }
   return response.json()
 }
@@ -123,8 +142,7 @@ export async function createUser(payload) {
     body: JSON.stringify(payload),
   })
   if (!response.ok) {
-    const data = await response.json().catch(() => ({}))
-    throw new Error(data.detail || '创建账号失败')
+    await throwApiError(response, '创建账号失败')
   }
   return response.json()
 }
@@ -136,8 +154,7 @@ export async function updateUser(id, payload) {
     body: JSON.stringify(payload),
   })
   if (!response.ok) {
-    const data = await response.json().catch(() => ({}))
-    throw new Error(data.detail || '更新账号失败')
+    await throwApiError(response, '更新账号失败')
   }
   return response.json()
 }
@@ -149,8 +166,7 @@ export async function resetUserPassword(id, newPassword) {
     body: JSON.stringify({ new_password: newPassword }),
   })
   if (!response.ok) {
-    const data = await response.json().catch(() => ({}))
-    throw new Error(data.detail || '重置密码失败')
+    await throwApiError(response, '重置密码失败')
   }
   return response.json()
 }
