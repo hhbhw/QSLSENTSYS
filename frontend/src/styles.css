@@ -95,6 +95,22 @@ body {
   flex-wrap: wrap;
 }
 
+.manage-top-layout {
+  display: grid;
+  grid-template-columns: minmax(360px, 0.95fr) minmax(520px, 1.35fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.manage-left-col,
+.manage-right-col {
+  min-width: 0;
+}
+
+.collapse-toggle {
+  min-width: 88px;
+}
+
 .role-badge {
   display: inline-flex;
   align-items: center;
@@ -292,6 +308,10 @@ th {
 }
 
 @media (max-width: 820px) {
+  .manage-top-layout {
+    grid-template-columns: 1fr;
+  }
+
   .two-col {
     grid-template-columns: 1fr;
   }

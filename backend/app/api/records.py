@@ -140,7 +140,7 @@ def public_lookup_records(
         sort_order="desc",
         page=page,
         page_size=page_size,
-        exact_callsign=True,
+        exact_callsign=False,
     )
 
     return {

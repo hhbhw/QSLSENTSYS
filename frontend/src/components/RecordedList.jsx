@@ -19,6 +19,7 @@ function parseExtraText(text) {
 export default function RecordedList({ records, loading, onRefresh, onUpdate, onDelete, canEdit }) {
   const [editingId, setEditingId] = useState(null)
   const [formState, setFormState] = useState({ card_type: '', is_written: false, is_sent: false, extra_text: '' })
+  const [collapsed, setCollapsed] = useState(true)
 
   const startEdit = (item) => {
     setEditingId(item.id)
@@ -49,73 +50,78 @@ export default function RecordedList({ records, loading, onRefresh, onUpdate, on
     <div className="card">
       <div className="topbar">
         <h3>已录入数据总览</h3>
-        <button type="button" onClick={onRefresh}>刷新总览</button>
+        <div className="inline-actions">
+          <button type="button" className="secondary-btn collapse-toggle" onClick={() => setCollapsed((prev) => !prev)}>{collapsed ? '▸ 展开' : '▾ 收起'}</button>
+          <button type="button" onClick={onRefresh}>刷新总览</button>
+        </div>
       </div>
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>呼号</th>
-              <th>卡片类型</th>
-              <th>已写好</th>
-              <th>已发出</th>
-              <th>创建时间</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
+      {!collapsed && (
+        <div className="table-wrap">
+          <table>
+            <thead>
               <tr>
-                <td colSpan={6}>正在加载...</td>
+                <th>呼号</th>
+                <th>卡片类型</th>
+                <th>已写好</th>
+                <th>已发出</th>
+                <th>创建时间</th>
+                <th>操作</th>
               </tr>
-            ) : records.length === 0 ? (
-              <tr>
-                <td colSpan={6}>暂无数据</td>
-              </tr>
-            ) : (
-              records.map((item) => (
-                <tr key={`overview-${item.id}`}>
-                  <td>{item.callsign}</td>
-                  <td>
-                    {editingId === item.id ? (
-                      <input value={formState.card_type} onChange={(e) => setFormState({ ...formState, card_type: e.target.value })} />
-                    ) : item.card_type}
-                  </td>
-                  <td>
-                    {editingId === item.id ? (
-                      <label className="inline-check"><input type="checkbox" checked={formState.is_written} onChange={(e) => setFormState({ ...formState, is_written: e.target.checked })} />是</label>
-                    ) : (item.is_written ? '是' : '否')}
-                  </td>
-                  <td>
-                    {editingId === item.id ? (
-                      <label className="inline-check"><input type="checkbox" checked={formState.is_sent} onChange={(e) => setFormState({ ...formState, is_sent: e.target.checked })} />是</label>
-                    ) : (item.is_sent ? '是' : '否')}
-                  </td>
-                  <td>{item.created_at || '-'}</td>
-                  <td>
-                    {canEdit && editingId === item.id ? (
-                      <div className="edit-actions">
-                        <textarea rows="3" value={formState.extra_text} onChange={(e) => setFormState({ ...formState, extra_text: e.target.value })} placeholder={'key:value\nmode:SSB'} />
-                        <div className="inline-actions">
-                          <button type="button" onClick={() => saveEdit(item.id)}>保存</button>
-                          <button type="button" onClick={cancelEdit}>取消</button>
-                        </div>
-                      </div>
-                    ) : canEdit ? (
-                      <div className="inline-actions">
-                        <button type="button" onClick={() => startEdit(item)}>编辑</button>
-                        <button type="button" className="danger-btn" onClick={() => onDelete(item.id)}>删除</button>
-                      </div>
-                    ) : (
-                      <span>-</span>
-                    )}
-                  </td>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={6}>正在加载...</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : records.length === 0 ? (
+                <tr>
+                  <td colSpan={6}>暂无数据</td>
+                </tr>
+              ) : (
+                records.map((item) => (
+                  <tr key={`overview-${item.id}`}>
+                    <td>{item.callsign}</td>
+                    <td>
+                      {editingId === item.id ? (
+                        <input value={formState.card_type} onChange={(e) => setFormState({ ...formState, card_type: e.target.value })} />
+                      ) : item.card_type}
+                    </td>
+                    <td>
+                      {editingId === item.id ? (
+                        <label className="inline-check"><input type="checkbox" checked={formState.is_written} onChange={(e) => setFormState({ ...formState, is_written: e.target.checked })} />是</label>
+                      ) : (item.is_written ? '是' : '否')}
+                    </td>
+                    <td>
+                      {editingId === item.id ? (
+                        <label className="inline-check"><input type="checkbox" checked={formState.is_sent} onChange={(e) => setFormState({ ...formState, is_sent: e.target.checked })} />是</label>
+                      ) : (item.is_sent ? '是' : '否')}
+                    </td>
+                    <td>{item.created_at || '-'}</td>
+                    <td>
+                      {canEdit && editingId === item.id ? (
+                        <div className="edit-actions">
+                          <textarea rows="3" value={formState.extra_text} onChange={(e) => setFormState({ ...formState, extra_text: e.target.value })} placeholder={'key:value\nmode:SSB'} />
+                          <div className="inline-actions">
+                            <button type="button" onClick={() => saveEdit(item.id)}>保存</button>
+                            <button type="button" onClick={cancelEdit}>取消</button>
+                          </div>
+                        </div>
+                      ) : canEdit ? (
+                        <div className="inline-actions">
+                          <button type="button" onClick={() => startEdit(item)}>编辑</button>
+                          <button type="button" className="danger-btn" onClick={() => onDelete(item.id)}>删除</button>
+                        </div>
+                      ) : (
+                        <span>-</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }

@@ -204,54 +204,61 @@ export default function App() {
         />
       )}
 
-      {canEdit && <RecordForm onCreate={handleCreate} />}
-
-      {isAdmin && <UserManagementPanel />}
-
       {message && <p className="message">{message}</p>}
-      <RecordedList records={overviewRecords} loading={overviewLoading} onRefresh={loadOverviewRecords} onUpdate={handleUpdate} onDelete={handleDelete} canEdit={canEdit} />
 
-      <form className="card search-bar" onSubmit={handleSearch}>
-        <label>
-          呼号
-          <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="输入呼号" />
-        </label>
-        <label>
-          扩展属性
-          <input value={searchExtraQuery} onChange={(e) => setSearchExtraQuery(e.target.value)} placeholder="例如 SEND / mode / SSB" />
-        </label>
-        <label>
-          已写好
-          <select value={filterWritten} onChange={(e) => setFilterWritten(e.target.value)}>
-            <option value="">全部</option>
-            <option value="true">是</option>
-            <option value="false">否</option>
-          </select>
-        </label>
-        <label>
-          已发出
-          <select value={filterSent} onChange={(e) => setFilterSent(e.target.value)}>
-            <option value="">全部</option>
-            <option value="true">是</option>
-            <option value="false">否</option>
-          </select>
-        </label>
-        <button type="submit">查询</button>
-        <button type="button" onClick={() => loadRecords(searchTerm, 1, filterWritten, filterSent, sortBy, sortOrder, searchExtraQuery)}>刷新列表</button>
-        <button type="button" onClick={() => { setSearchTerm(''); setSearchExtraQuery(''); setFilterWritten(''); setFilterSent(''); loadRecords('', 1, '', '', sortBy, sortOrder, '') }}>重置</button>
-      </form>
-      <RecordTable
-        records={records}
-        pagination={pagination}
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        highlightedRecordId={highlightedRecordId}
-        canEdit={canEdit}
-        onUpdate={handleUpdate}
-        onDelete={handleDelete}
-        onPageChange={handlePageChange}
-        onSortChange={handleSortChange}
-      />
+      <section className="manage-top-layout">
+        <div className="manage-left-col">
+          {canEdit && <RecordForm onCreate={handleCreate} />}
+          {isAdmin && <UserManagementPanel />}
+        </div>
+
+        <div className="manage-right-col">
+          <form className="card search-bar" onSubmit={handleSearch}>
+            <label>
+              呼号
+              <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="输入呼号" />
+            </label>
+            <label>
+              扩展属性
+              <input value={searchExtraQuery} onChange={(e) => setSearchExtraQuery(e.target.value)} placeholder="例如 SEND / mode / SSB" />
+            </label>
+            <label>
+              已写好
+              <select value={filterWritten} onChange={(e) => setFilterWritten(e.target.value)}>
+                <option value="">全部</option>
+                <option value="true">是</option>
+                <option value="false">否</option>
+              </select>
+            </label>
+            <label>
+              已发出
+              <select value={filterSent} onChange={(e) => setFilterSent(e.target.value)}>
+                <option value="">全部</option>
+                <option value="true">是</option>
+                <option value="false">否</option>
+              </select>
+            </label>
+            <button type="submit">查询</button>
+            <button type="button" onClick={() => loadRecords(searchTerm, 1, filterWritten, filterSent, sortBy, sortOrder, searchExtraQuery)}>刷新列表</button>
+            <button type="button" onClick={() => { setSearchTerm(''); setSearchExtraQuery(''); setFilterWritten(''); setFilterSent(''); loadRecords('', 1, '', '', sortBy, sortOrder, '') }}>重置</button>
+          </form>
+
+          <RecordTable
+            records={records}
+            pagination={pagination}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            highlightedRecordId={highlightedRecordId}
+            canEdit={canEdit}
+            onUpdate={handleUpdate}
+            onDelete={handleDelete}
+            onPageChange={handlePageChange}
+            onSortChange={handleSortChange}
+          />
+        </div>
+      </section>
+
+      <RecordedList records={overviewRecords} loading={overviewLoading} onRefresh={loadOverviewRecords} onUpdate={handleUpdate} onDelete={handleDelete} canEdit={canEdit} />
     </main>
   )
 }

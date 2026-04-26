@@ -49,3 +49,7 @@ logs/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Local workflow docs (keep local only)
+HANDOFF.md
+help.md
