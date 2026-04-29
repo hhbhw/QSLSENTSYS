@@ -8,6 +8,7 @@ class QslRecordBase(BaseModel):
     card_type: str = Field(min_length=1, max_length=128)
     is_written: bool = False
     is_sent: bool = False
+    send: str = Field(default='', max_length=128)
     extra_attributes: dict[str, str] = Field(default_factory=dict)
 
     @field_validator("callsign")
@@ -24,6 +25,7 @@ class QslRecordUpdate(BaseModel):
     card_type: str | None = Field(default=None, min_length=1, max_length=128)
     is_written: bool | None = None
     is_sent: bool | None = None
+    send: str | None = Field(default=None, max_length=128)
     extra_attributes: dict[str, str] | None = None
 
 

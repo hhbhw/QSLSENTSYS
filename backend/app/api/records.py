@@ -154,6 +154,24 @@ def public_lookup_records(
     }
 
 
+@router.get("/send-suggestions", response_model=list[str])
+def send_suggestions(
+    prefix: str = Query(default=''),
+    db: Session = Depends(get_db),
+    _: AdminUser = Depends(require_view_permission),
+) -> list[str]:
+    stmt = (
+        select(QslRecord.send)
+        .where(QslRecord.send != '')
+        .distinct()
+    )
+    all_values: list[str] = db.execute(stmt).scalars().all()
+    lower_prefix = prefix.strip().lower()
+    if lower_prefix:
+        all_values = [v for v in all_values if v.lower().startswith(lower_prefix)]
+    return sorted(all_values)
+
+
 @router.delete("/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_record(
     record_id: int,

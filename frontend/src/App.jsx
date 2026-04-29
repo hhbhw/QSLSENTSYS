@@ -207,11 +207,6 @@ export default function App() {
       {message && <p className="message">{message}</p>}
 
       <section className="manage-top-layout">
-        <div className="manage-left-col">
-          {canEdit && <RecordForm onCreate={handleCreate} />}
-          {isAdmin && <UserManagementPanel />}
-        </div>
-
         <div className="manage-right-col">
           <form className="card search-bar" onSubmit={handleSearch}>
             <label>
@@ -242,23 +237,31 @@ export default function App() {
             <button type="button" onClick={() => loadRecords(searchTerm, 1, filterWritten, filterSent, sortBy, sortOrder, searchExtraQuery)}>刷新列表</button>
             <button type="button" onClick={() => { setSearchTerm(''); setSearchExtraQuery(''); setFilterWritten(''); setFilterSent(''); loadRecords('', 1, '', '', sortBy, sortOrder, '') }}>重置</button>
           </form>
-
-          <RecordTable
-            records={records}
-            pagination={pagination}
-            sortBy={sortBy}
-            sortOrder={sortOrder}
-            highlightedRecordId={highlightedRecordId}
-            canEdit={canEdit}
-            onUpdate={handleUpdate}
-            onDelete={handleDelete}
-            onPageChange={handlePageChange}
-            onSortChange={handleSortChange}
-          />
         </div>
+
+        {canEdit && (
+          <div className="manage-left-col">
+            <RecordForm onCreate={handleCreate} />
+          </div>
+        )}
       </section>
 
+      <RecordTable
+        records={records}
+        pagination={pagination}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        highlightedRecordId={highlightedRecordId}
+        canEdit={canEdit}
+        onUpdate={handleUpdate}
+        onDelete={handleDelete}
+        onPageChange={handlePageChange}
+        onSortChange={handleSortChange}
+      />
+
       <RecordedList records={overviewRecords} loading={overviewLoading} onRefresh={loadOverviewRecords} onUpdate={handleUpdate} onDelete={handleDelete} canEdit={canEdit} />
+
+      {isAdmin && <UserManagementPanel />}
     </main>
   )
 }

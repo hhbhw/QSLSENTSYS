@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import inspect, text
 
 from app.api import auth, records, users
 from app.core.config import settings
@@ -22,11 +23,21 @@ app.add_middleware(
 @app.on_event("startup")
 def startup() -> None:
     Base.metadata.create_all(bind=engine)
+    _migrate_add_send_column()
     db = SessionLocal()
     try:
         ensure_admin_user(db)
     finally:
         db.close()
+
+
+def _migrate_add_send_column() -> None:
+    inspector = inspect(engine)
+    existing = [col["name"] for col in inspector.get_columns("qsl_records")]
+    if "send" not in existing:
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE qsl_records ADD COLUMN send VARCHAR(128) NOT NULL DEFAULT ''"))
+            conn.commit()
 
 
 @app.get("/health", tags=["health"])

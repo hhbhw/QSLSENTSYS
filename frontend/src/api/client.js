@@ -115,6 +115,16 @@ export async function updateRecord(id, payload) {
   return response.json()
 }
 
+export async function getSendSuggestions(prefix) {
+  const params = new URLSearchParams()
+  if (prefix) params.append('prefix', prefix)
+  const response = await fetch(`${API_BASE}/records/send-suggestions?${params}`, {
+    headers: getHeaders(),
+  })
+  if (!response.ok) return []
+  return response.json()
+}
+
 export async function deleteRecord(id) {
   const response = await fetch(`${API_BASE}/records/${id}`, {
     method: 'DELETE',

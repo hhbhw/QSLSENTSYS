@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import SendInput from './SendInput'
 
 function parseExtraAttributes(text) {
   const lines = text.split('\n').map((line) => line.trim()).filter(Boolean)
@@ -18,6 +19,7 @@ export default function RecordForm({ onCreate }) {
   const [cardType, setCardType] = useState('')
   const [isWritten, setIsWritten] = useState(false)
   const [isSent, setIsSent] = useState(false)
+  const [send, setSend] = useState('')
   const [extraText, setExtraText] = useState('')
   const [error, setError] = useState('')
 
@@ -30,12 +32,14 @@ export default function RecordForm({ onCreate }) {
         card_type: cardType,
         is_written: isWritten,
         is_sent: isSent,
+        send,
         extra_attributes: parseExtraAttributes(extraText),
       })
       setCallsign('')
       setCardType('')
       setIsWritten(false)
       setIsSent(false)
+      setSend('')
       setExtraText('')
     } catch (e) {
       setError(e.message)
@@ -55,6 +59,10 @@ export default function RecordForm({ onCreate }) {
           <input value={cardType} onChange={(e) => setCardType(e.target.value)} placeholder="例如 直邮卡" required />
         </label>
       </div>
+      <label>
+        发送人（SEND）
+        <SendInput value={send} onChange={setSend} placeholder="发送人呼号或姓名" />
+      </label>
       <div className="grid two-col check-row">
         <label><input type="checkbox" checked={isWritten} onChange={(e) => setIsWritten(e.target.checked)} />是否已写好</label>
         <label><input type="checkbox" checked={isSent} onChange={(e) => setIsSent(e.target.checked)} />是否已发出</label>

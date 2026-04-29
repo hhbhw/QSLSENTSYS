@@ -12,6 +12,7 @@ class QslRecord(Base):
     card_type: Mapped[str] = mapped_column(String(128), nullable=False)
     is_written: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_sent: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    send: Mapped[str] = mapped_column(String(128), nullable=False, default='', server_default='')
     extra_attributes: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
     created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

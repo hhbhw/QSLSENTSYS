@@ -20,8 +20,10 @@ export default function RecordedList({ records, loading, onRefresh, onUpdate, on
   const [editingId, setEditingId] = useState(null)
   const [formState, setFormState] = useState({ card_type: '', is_written: false, is_sent: false, extra_text: '' })
   const [collapsed, setCollapsed] = useState(true)
+  const [activeRowId, setActiveRowId] = useState(null)
 
   const startEdit = (item) => {
+    setActiveRowId(item.id)
     setEditingId(item.id)
     setFormState({
       card_type: item.card_type || '',
@@ -37,6 +39,7 @@ export default function RecordedList({ records, loading, onRefresh, onUpdate, on
   }
 
   const saveEdit = async (id) => {
+    setActiveRowId(id)
     await onUpdate(id, {
       card_type: formState.card_type,
       is_written: formState.is_written,
@@ -79,7 +82,7 @@ export default function RecordedList({ records, loading, onRefresh, onUpdate, on
                 </tr>
               ) : (
                 records.map((item) => (
-                  <tr key={`overview-${item.id}`}>
+                  <tr key={`overview-${item.id}`} className={activeRowId === item.id ? 'row-highlight' : ''} onClick={() => setActiveRowId(item.id)}>
                     <td>{item.callsign}</td>
                     <td>
                       {editingId === item.id ? (
@@ -109,7 +112,7 @@ export default function RecordedList({ records, loading, onRefresh, onUpdate, on
                       ) : canEdit ? (
                         <div className="inline-actions">
                           <button type="button" onClick={() => startEdit(item)}>编辑</button>
-                          <button type="button" className="danger-btn" onClick={() => onDelete(item.id)}>删除</button>
+                          <button type="button" className="danger-btn" onClick={() => { setActiveRowId(item.id); onDelete(item.id) }}>删除</button>
                         </div>
                       ) : (
                         <span>-</span>
